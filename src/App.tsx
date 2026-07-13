@@ -5,8 +5,9 @@ import { useDotPad } from './dotpad/useDotPad';
 import { PinPlate } from './components/PinPlate';
 import { speak, replay } from './tts';
 import { IS_EMBED, SHOW_PREVIEW, postExit } from './embed';
+import introImage from './assets/Dot-Fossil-Lab-intro.png';
 
-type Screen = 'home' | 'learn' | 'quiz1' | 'quiz2' | 'collection';
+type Screen = 'intro' | 'home' | 'learn' | 'quiz1' | 'quiz2' | 'collection';
 
 // ── 진행도 저장 ──────────────────────────────────────────────────────────────
 interface Progress {
@@ -50,7 +51,7 @@ const KEY_HELP =
   '닷패드에서는 기능키 1과 2로 위아래, 패닝키로 좌우, 기능키 3으로 선택, 기능키 4로 표시, 전체 패닝키로 음성을 다시 들어요.';
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('home');
+  const [screen, setScreen] = useState<Screen>('intro');
   const [progress, setProgress] = useState<Progress>(loadProgress);
   const pad = useDotPad();
 
@@ -65,8 +66,8 @@ export default function App() {
   const goHome = useCallback(() => setScreen('home'), []);
 
   return (
-    <div className={`app ${IS_EMBED ? 'app--embed' : ''}`}>
-      {!IS_EMBED && (
+    <div className={`app ${IS_EMBED ? 'app--embed' : ''} ${screen === 'intro' ? 'app--intro' : ''}`}>
+      {!IS_EMBED && screen !== 'intro' && (
         <header className="topbar">
           <div className="brand">
             <span className="brand-mark" aria-hidden="true">⠙⠋</span>
@@ -76,13 +77,16 @@ export default function App() {
           <PadStatus pad={pad} />
         </header>
       )}
-      {IS_EMBED && (
+      {IS_EMBED && screen !== 'intro' && (
         <div className="embed-strip">
           <PadStatus pad={pad} />
         </div>
       )}
 
-      <main className="stage">
+      <main className={`stage ${screen === 'intro' ? 'stage--intro' : ''}`}>
+        {screen === 'intro' && (
+          <IntroScreen onStart={() => setScreen('home')} />
+        )}
         {screen === 'home' && (
           <HomeScreen pad={pad} progress={progress} onNavigate={setScreen} />
         )}
@@ -103,6 +107,51 @@ export default function App() {
         )}
       </main>
     </div>
+  );
+}
+
+// ── 인트로 ───────────────────────────────────────────────────────────────────
+function IntroScreen({ onStart }: { onStart: () => void }) {
+  const announced = useRef(false);
+
+  useEffect(() => {
+    if (announced.current) return;
+    announced.current = true;
+    speak('닷 화석 연구소. 공룡 화석 부위 맞추기. 엔터를 눌러 연구소에 입장하세요.');
+  }, []);
+
+  useKeys(e => {
+    if (e.key === 'Enter') {
+      onStart();
+    } else if (e.key === 'F2') {
+      replay();
+    } else if (e.key === 'F1') {
+      speak('엔터를 누르면 연구소에 입장합니다. 닷패드에서는 기능키 3을 누르세요.');
+    }
+  });
+
+  return (
+    <section className="intro-screen" aria-labelledby="intro-title">
+      <img className="intro-art" src={introImage} alt="" aria-hidden="true" />
+      <div className="intro-vignette" aria-hidden="true" />
+      <div className="intro-content">
+        <p className="intro-kicker">TACTILE EXPEDITION · RESEARCH FILE 01</p>
+        <h2 id="intro-title" className="visually-hidden">닷 화석 연구소 — 공룡 화석 부위 맞추기</h2>
+        <div className="intro-mobile-title" aria-hidden="true">
+          <strong>닷 화석 연구소</strong>
+          <span>DOT FOSSIL LAB · 공룡 화석 부위 맞추기</span>
+        </div>
+        <button className="intro-start" type="button" onClick={onStart} autoFocus>
+          <span className="intro-start__signal" aria-hidden="true" />
+          <span>
+            <strong>연구소 입장</strong>
+            <small>ENTER · 닷패드 F3</small>
+          </span>
+          <span className="intro-start__arrow" aria-hidden="true">›</span>
+        </button>
+        <p className="intro-help">화살표로 탐색하고 손끝으로 화석의 비밀을 밝혀 보세요</p>
+      </div>
+    </section>
   );
 }
 
@@ -187,19 +236,29 @@ function HomeScreen({
 
   return (
     <section className="menu-screen" aria-label="메인 메뉴">
-      <p className="eyebrow">발굴 캠프</p>
-      <h2 className="screen-title">오늘은 무엇을 배워 볼까요?</h2>
+      <div className="screen-heading">
+        <div>
+          <p className="eyebrow">FOSSIL RESEARCH CONSOLE · ONLINE</p>
+          <h2 className="screen-title">오늘의 발굴 임무를 선택하세요</h2>
+        </div>
+        <div className="mission-rank" aria-label={`퀴즈 최고 점수 ${progress.best.lv1 + progress.best.lv2}점`}>
+          <span>RESEARCH SCORE</span>
+          <strong>{progress.best.lv1 + progress.best.lv2}<small>/10</small></strong>
+        </div>
+      </div>
       <ul className="menu-list" role="listbox" aria-label="메뉴">
         {items.map((it, i) => (
           <li
             key={it.id}
             role="option"
             aria-selected={i === idx}
-            className={i === idx ? 'is-active' : ''}
+            className={`${i === idx ? 'is-active' : ''} menu-item--${it.id}`}
             onClick={() => { setIdx(i); it.run(); }}
           >
+            <span className="menu-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
             <span className="menu-label">{it.label}</span>
             <span className="menu-hint">{it.hint}</span>
+            <span className="menu-chevron" aria-hidden="true">›</span>
           </li>
         ))}
       </ul>
