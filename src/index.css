@@ -1,0 +1,263 @@
+/* ── Dot Fossil Lab — 야간 발굴 캠프 ─────────────────────────────────────────
+   지층 단면의 어두운 퇴적층 위에 작업등 앰버가 비추는 톤.
+   시각 화면은 교사·검수자용 보조 뷰이므로 명도 대비를 크게(WCAG AA+),
+   선택 상태는 색+형태(좌측 앰버 바)로 이중 표시한다. */
+
+:root {
+  --earth-deep:  #221a12;  /* 배경 — 깊은 퇴적층 */
+  --earth-panel: #2f2519;  /* 패널 — 상부 지층 */
+  --earth-line:  #4d3d29;  /* 지층 경계선 */
+  --bone:        #f0e7d5;  /* 본문 — 뼈 아이보리 (대비 12:1) */
+  --bone-dim:    #b9ab90;  /* 보조 텍스트 (대비 6.3:1) */
+  --amber:       #f2a93b;  /* 작업등 — 포커스/선택 */
+  --moss:        #8fd08a;  /* 정답 */
+  --clay-red:    #ef7b66;  /* 오답 */
+  --plate-pin:   #ffc668;  /* 핀 플레이트 돌출 핀 */
+}
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, #241b12 0%, #221a12 34%, #1d150e 100%);
+  color: var(--bone);
+  font-family: 'Pretendard Variable', Pretendard, -apple-system, sans-serif;
+  font-size: 17px;
+  line-height: 1.55;
+}
+
+/* ── 앱 프레임 — 규격 3번: 부모가 준 영역에 꽉 차게, 보드 중앙 배치 ──── */
+.app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.stage {
+  flex: 1;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(16px, 3vh, 40px) clamp(16px, 4vw, 48px);
+}
+
+.stage > section {
+  width: min(860px, 100%);
+}
+
+/* ── 상단바 ────────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px clamp(16px, 4vw, 48px);
+  border-bottom: 1px solid var(--earth-line);
+}
+
+.brand { display: flex; align-items: baseline; gap: 12px; }
+
+.brand-mark {
+  font-size: 22px;
+  color: var(--amber);
+  letter-spacing: 2px;
+}
+
+.brand h1 {
+  margin: 0;
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.brand-sub { color: var(--bone-dim); font-size: 14px; }
+
+/* 임베드 모드: 브랜딩 제거, 연결 상태만 얇게 */
+.embed-strip {
+  display: flex;
+  justify-content: flex-end;
+  padding: 8px clamp(12px, 3vw, 24px) 0;
+}
+
+.pad-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 14px;
+  color: var(--bone-dim);
+}
+
+.pad-dot { width: 9px; height: 9px; border-radius: 50%; background: #6b5a41; }
+.pad-dot--connected { background: var(--moss); box-shadow: 0 0 8px rgba(143, 208, 138, 0.7); }
+.pad-dot--connecting { background: var(--amber); }
+.pad-dot--unsupported { background: var(--clay-red); }
+
+.pad-status button {
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--earth-deep);
+  background: var(--amber);
+  border: 0;
+  border-radius: 999px;
+  padding: 7px 16px;
+  cursor: pointer;
+}
+.pad-status button:hover { filter: brightness(1.08); }
+.pad-status button:focus-visible { outline: 3px solid var(--bone); outline-offset: 2px; }
+
+/* ── 공통 타이포 ───────────────────────────────────────────────────────── */
+.eyebrow {
+  margin: 0 0 6px;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--amber);
+}
+
+.screen-title {
+  margin: 0 0 12px;
+  font-size: clamp(24px, 3.4vw, 34px);
+  font-weight: 800;
+  line-height: 1.25;
+  text-wrap: balance;
+}
+
+.title-en {
+  font-size: 0.5em;
+  font-weight: 600;
+  color: var(--bone-dim);
+  letter-spacing: 0.12em;
+  margin-left: 8px;
+}
+
+.lede { margin: 0 0 8px; font-size: 18px; }
+.fact { margin: 0 0 16px; color: var(--bone-dim); }
+.fact strong { color: var(--bone); }
+
+.key-help {
+  margin-top: 20px;
+  font-size: 13.5px;
+  color: var(--bone-dim);
+  border-top: 1px solid var(--earth-line);
+  padding-top: 12px;
+}
+
+/* ── 메뉴/선택지 리스트 — 선택 = 앰버 좌측 바 + 배경 ─────────────────── */
+.menu-list, .choice-list {
+  list-style: none;
+  margin: 12px 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.menu-list li, .choice-list li {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 18px;
+  border: 1px solid var(--earth-line);
+  border-left: 6px solid transparent;
+  border-radius: 10px;
+  background: var(--earth-panel);
+  cursor: pointer;
+  transition: border-color 120ms, background 120ms;
+}
+
+.menu-list li.is-active, .choice-list li.is-active {
+  border-color: var(--amber);
+  border-left-color: var(--amber);
+  background: #3a2d1c;
+}
+
+.choice-list li.is-answer {
+  border-color: var(--moss);
+  border-left-color: var(--moss);
+  background: #2c3423;
+}
+
+.choice-list li.is-wrong {
+  border-color: var(--clay-red);
+  border-left-color: var(--clay-red);
+  background: #3c2721;
+}
+
+.menu-label { font-weight: 700; font-size: 17px; }
+.menu-hint { margin-left: auto; color: var(--bone-dim); font-size: 14px; text-align: right; }
+
+.choice-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--earth-line);
+  color: var(--bone);
+  font-weight: 800;
+  font-size: 14px;
+  flex: none;
+}
+.is-active .choice-num { background: var(--amber); color: var(--earth-deep); }
+.is-answer .choice-num { background: var(--moss); color: var(--earth-deep); }
+
+/* ── 퀴즈 피드백 ───────────────────────────────────────────────────────── */
+.feedback {
+  margin: 16px 0 0;
+  padding: 14px 18px;
+  border-radius: 10px;
+  font-weight: 800;
+}
+.feedback--ok { background: #2c3423; color: var(--moss); }
+.feedback--no { background: #3c2721; color: var(--clay-red); }
+.feedback-explain { display: block; margin-top: 4px; font-weight: 500; color: var(--bone); }
+
+/* ── 핀 플레이트 (시뮬레이션 프리뷰) ─────────────────────────────────── */
+.pin-plate {
+  margin: 22px 0 0;
+  padding: 16px;
+  border: 1px solid var(--earth-line);
+  border-radius: 14px;
+  background: #191209;
+}
+
+.pin-plate figcaption {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 10px;
+}
+
+.plate-eyebrow {
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  color: var(--bone-dim);
+  font-weight: 700;
+}
+
+.plate-label { font-size: 14px; font-weight: 700; color: var(--amber); }
+
+.pin-plate svg { display: block; width: 100%; height: auto; }
+.plate-grid circle { fill: #33281a; }
+.plate-pins circle { fill: var(--plate-pin); }
+
+/* ── 반응형 — 좁은 창(모달·모바일) ───────────────────────────────────── */
+@media (max-width: 640px) {
+  body { font-size: 16px; }
+  .brand-sub { display: none; }
+  .menu-hint { display: none; }
+  .stage { padding: 14px; }
+}
+
+/* 낮은 세로 창에서는 프리뷰를 줄여 스크롤 최소화 */
+@media (max-height: 720px) {
+  .pin-plate { max-width: 460px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; }
+}
