@@ -6,6 +6,7 @@ import { PinPlate } from './components/PinPlate';
 import { speak, replay } from './tts';
 import { IS_EMBED, SHOW_PREVIEW, postExit } from './embed';
 import introImage from './assets/Dot-Fossil-Lab-intro.png';
+import introMobileImage from './assets/Dot-Fossil-Lab-intro-mobile.png';
 
 type Screen = 'intro' | 'home' | 'learn' | 'quiz1' | 'quiz2' | 'collection';
 
@@ -132,15 +133,14 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
 
   return (
     <section className="intro-screen" aria-labelledby="intro-title">
-      <img className="intro-art" src={introImage} alt="" aria-hidden="true" />
+      <picture className="intro-picture" aria-hidden="true">
+        <source media="(orientation: portrait)" srcSet={introMobileImage} />
+        <img className="intro-art" src={introImage} alt="" />
+      </picture>
       <div className="intro-vignette" aria-hidden="true" />
       <div className="intro-content">
         <p className="intro-kicker">TACTILE EXPEDITION · RESEARCH FILE 01</p>
         <h2 id="intro-title" className="visually-hidden">닷 화석 연구소 — 공룡 화석 부위 맞추기</h2>
-        <div className="intro-mobile-title" aria-hidden="true">
-          <strong>닷 화석 연구소</strong>
-          <span>DOT FOSSIL LAB · 공룡 화석 부위 맞추기</span>
-        </div>
         <button className="intro-start" type="button" onClick={onStart} autoFocus>
           <span className="intro-start__signal" aria-hidden="true" />
           <span>
