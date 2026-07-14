@@ -1,18 +1,11 @@
 import { newSilhouetteGrid, stroke, polyline, blob } from '../dotpad/silhouette';
 import { boolGridToHex } from '../dotpad/tactileGen';
 
-// 모든 실루엣은 머리가 오른쪽(x 큰 쪽)을 향하도록 통일. 가장자리 2~3핀 여백 확보.
+// 절차적 실루엣은 머리가 오른쪽(x 큰 쪽)을 향하도록 통일. 가장자리 2~3핀 여백 확보.
+// 브라키오사우루스는 사용자가 제공한 DotPad 320 DTMS 원본 그래픽을 그대로 사용한다.
 
-function brachiosaurus(): string {
-  const g = newSilhouetteGrid();
-  stroke(g, 18, 28, 37, 28, 7);              // 몸통 — 둥글고 굵게
-  polyline(g, [[33, 27], [40, 18], [45, 9], [48, 6]], 4); // 아주 긴 목 — 대표 특징
-  blob(g, 49, 5, 3);                          // 작은 머리
-  stroke(g, 22, 31, 22, 37, 3);                // 앞다리
-  stroke(g, 33, 31, 33, 37, 3);                // 뒷다리
-  stroke(g, 18, 28, 8, 24, 3);                 // 짧은 꼬리
-  return boolGridToHex(g);
-}
+const BRACHIOSAURUS_DTMS_HEX =
+  '000000000000C8AE4608000000000000000000000000000000000000000000000000000033220EE100000000000000000000000000000000000000000000000000000000E1300C000000000000000000000000000000000000000000000000000000F00087000000000000000000000000000000000000000000000000000000F00010C6888888080000000000000000000000000000000000000000000000C300000000001021C6080000000000000000000000000000000000000000300C8000800080000031C608000000000000000000000000000000000000001FF20CF0CCF400F0448498224480080000000000000000000000000000C08B9E8FF0FCF88FF8000000111111000000000000000000000000000000101111110110011111000000000000000000000000';
 
 function velociraptor(): string {
   const g = newSilhouetteGrid();
@@ -64,7 +57,7 @@ function ankylosaurus(): string {
 }
 
 export const SILHOUETTES: Record<string, string> = {
-  brachiosaurus: brachiosaurus(),
+  brachiosaurus: BRACHIOSAURUS_DTMS_HEX,
   velociraptor: velociraptor(),
   spinosaurus: spinosaurus(),
   parasaurolophus: parasaurolophus(),
