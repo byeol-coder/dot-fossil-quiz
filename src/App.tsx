@@ -193,23 +193,51 @@ function HomeScreen({
   const [idx, setIdx] = useState(0);
   const announced = useRef(false);
 
+  const GRID_COLS = 3;
+  const gridRows = Math.ceil(items.length / GRID_COLS);
+
+  const moveGrid = useCallback((dRow: number, dCol: number, from: number) => {
+    let row = Math.floor(from / GRID_COLS);
+    let col = from % GRID_COLS;
+    if (dCol !== 0) {
+      const rowStart = row * GRID_COLS;
+      const rowLen = Math.min(GRID_COLS, items.length - rowStart);
+      col = (col + dCol + rowLen) % rowLen;
+    }
+    if (dRow !== 0) {
+      row = (row + dRow + gridRows) % gridRows;
+      const rowStart = row * GRID_COLS;
+      const rowLen = Math.min(GRID_COLS, items.length - rowStart);
+      col = Math.min(col, rowLen - 1);
+    }
+    return row * GRID_COLS + col;
+  }, [items.length, gridRows]);
+
   useEffect(() => {
     if (announced.current) return;
     announced.current = true;
     speak(
       '닷 포실 랩, 공룡 화석 부위 맞추기에 온 걸 환영해요. ' +
-      '위아래 화살표로 메뉴를 고르고 엔터로 시작하세요. 처음이라면 화석 탐색 학습부터 해 보세요.',
+      '화살표로 칸을 옮기고 엔터로 시작하세요. 처음이라면 화석 탐색 학습부터 해 보세요.',
     );
     pad.sendText('닷 포실 랩');
   }, [pad]);
 
   useKeys(e => {
-    if (e.key === 'ArrowDown' || e.key === 'ArrowRight') {
-      const n = (idx + 1) % items.length;
+    if (e.key === 'ArrowDown') {
+      const n = moveGrid(1, 0, idx);
       setIdx(n);
       speak(`${items[n].label}. ${items[n].hint}`);
-    } else if (e.key === 'ArrowUp' || e.key === 'ArrowLeft') {
-      const n = (idx - 1 + items.length) % items.length;
+    } else if (e.key === 'ArrowUp') {
+      const n = moveGrid(-1, 0, idx);
+      setIdx(n);
+      speak(`${items[n].label}. ${items[n].hint}`);
+    } else if (e.key === 'ArrowRight') {
+      const n = moveGrid(0, 1, idx);
+      setIdx(n);
+      speak(`${items[n].label}. ${items[n].hint}`);
+    } else if (e.key === 'ArrowLeft') {
+      const n = moveGrid(0, -1, idx);
       setIdx(n);
       speak(`${items[n].label}. ${items[n].hint}`);
     } else if (e.key === 'Enter') {
@@ -251,7 +279,7 @@ function HomeScreen({
           </li>
         ))}
       </ul>
-      <p className="key-help">↑↓ 이동 · Enter 선택 · F1 도움말 · F2 다시 듣기</p>
+      <p className="key-help">↑↓←→ 칸 이동 · Enter 선택 · F1 도움말 · F2 다시 듣기</p>
     </section>
   );
 }
