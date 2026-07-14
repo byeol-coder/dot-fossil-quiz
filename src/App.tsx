@@ -24,7 +24,7 @@ const KEY_HELP =
   '닷패드에서는 기능키 1과 2로 위아래, 패닝키로 좌우, 기능키 3으로 선택, 기능키 4로 표시, 전체 패닝키로 음성을 다시 들어요.';
 
 export default function App() {
-  const [screen, setScreen] = useState<Screen>('intro');
+  const [screen, setScreen] = useState<Screen>(IS_EMBED ? 'home' : 'intro');
   const [progress, setProgress] = useState<Progress>(loadProgress);
   const pad = useDotPad();
 
