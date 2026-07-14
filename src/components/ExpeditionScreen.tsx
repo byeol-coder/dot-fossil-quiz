@@ -417,6 +417,9 @@ export function ExpeditionScreen({
 
       {phase === 'reward' && (
         <>
+          <div className="reward-burst" aria-hidden="true">
+            <span /><span /><span />
+          </div>
           <h2 className="screen-title">복원 성공! {fossil.dinosaurName}</h2>
           <p className="lede">{fossil.name} · 주인은 <strong>{fossil.dinosaurName}</strong></p>
           <p className="fact">{fossil.dinosaurFact}</p>

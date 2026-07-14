@@ -3,6 +3,8 @@ import { PARTS, DINOSAUR_POOL, shuffle } from './data/parts';
 import type { PartDef } from './data/parts';
 import { useDotPad } from './dotpad/useDotPad';
 import { PinPlate } from './components/PinPlate';
+import { CampBackdrop } from './components/CampBackdrop';
+import { MenuIcon } from './components/MenuIcon';
 import { StoryScreen } from './components/StoryScreen';
 import { FormationScreen } from './components/FormationScreen';
 import { DigExperienceScreen } from './components/DigExperienceScreen';
@@ -38,6 +40,7 @@ export default function App() {
 
   return (
     <div className={`app ${IS_EMBED ? 'app--embed' : ''} ${screen === 'intro' ? 'app--intro' : ''}`}>
+      <CampBackdrop />
       {!IS_EMBED && screen !== 'intro' && (
         <header className="topbar">
           <div className="brand">
@@ -241,7 +244,7 @@ function HomeScreen({
             className={`${i === idx ? 'is-active' : ''} menu-item--${it.id}`}
             onClick={() => { setIdx(i); it.run(); }}
           >
-            <span className="menu-index" aria-hidden="true">{String(i + 1).padStart(2, '0')}</span>
+            <MenuIcon id={it.id} />
             <span className="menu-label">{it.label}</span>
             <span className="menu-hint">{it.hint}</span>
             <span className="menu-chevron" aria-hidden="true">›</span>
