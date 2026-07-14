@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { DotPadSDK, DotPadScanner, DataCodes, KeyCodes } from './DotPadSDK-3_0_0.js';
 import type { DotDevice } from './DotPadSDK-3_0_0.js';
 import { textToBrailleHex } from './koreanBraille';
@@ -108,5 +108,8 @@ export function useDotPad() {
       .catch(() => push(textToBrailleHex(text, 20)));
   }, [status]);
 
-  return { status, connect, connectDemo, disconnect, sendHex, sendText };
+  return useMemo(
+    () => ({ status, connect, connectDemo, disconnect, sendHex, sendText }),
+    [status, connect, connectDemo, disconnect, sendHex, sendText],
+  );
 }

@@ -3,49 +3,19 @@ import { PARTS, DINOSAUR_POOL, shuffle } from './data/parts';
 import type { PartDef } from './data/parts';
 import { useDotPad } from './dotpad/useDotPad';
 import { PinPlate } from './components/PinPlate';
+import { StoryScreen } from './components/StoryScreen';
+import { FormationScreen } from './components/FormationScreen';
+import { DigExperienceScreen } from './components/DigExperienceScreen';
+import { ExpeditionScreen } from './components/ExpeditionScreen';
 import { speak, replay } from './tts';
 import { IS_EMBED, SHOW_PREVIEW, postExit } from './embed';
+import { useKeys } from './hooks/useKeys';
+import { loadProgress, saveProgress } from './progress';
+import type { Progress } from './progress';
 import introImage from './assets/Dot-Fossil-Lab-intro.png';
 import introMobileImage from './assets/Dot-Fossil-Lab-intro-mobile.png';
 
-type Screen = 'intro' | 'home' | 'learn' | 'quiz1' | 'quiz2' | 'collection';
-
-// ── 진행도 저장 ──────────────────────────────────────────────────────────────
-interface Progress {
-  learned: Record<string, boolean>;                       // 학습 모드에서 상세까지 들은 부위
-  correct: Record<string, { lv1?: boolean; lv2?: boolean }>; // 퀴즈 정답 경험
-  best: { lv1: number; lv2: number };                     // 최고 점수 (5점 만점)
-}
-const STORAGE_KEY = 'dot-fossil-quiz.progress.v1';
-
-function loadProgress(): Progress {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return { learned: {}, correct: {}, best: { lv1: 0, lv2: 0 }, ...JSON.parse(raw) };
-  } catch { /* 손상 시 초기화 */ }
-  return { learned: {}, correct: {}, best: { lv1: 0, lv2: 0 } };
-}
-function saveProgress(p: Progress) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(p)); } catch { /* 저장 실패 무시 */ }
-}
-
-// 화면별 키 핸들러 — 최신 핸들러를 ref로 유지해 stale closure 방지
-function useKeys(handler: (e: KeyboardEvent) => void) {
-  const ref = useRef(handler);
-  ref.current = handler;
-  useEffect(() => {
-    const fn = (e: KeyboardEvent) => {
-      const tag = (e.target as HTMLElement)?.tagName;
-      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
-      const keys = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'F1', 'F2', 'F3', 'F4'];
-      if (!keys.includes(e.key)) return;
-      e.preventDefault();
-      ref.current(e);
-    };
-    window.addEventListener('keydown', fn);
-    return () => window.removeEventListener('keydown', fn);
-  }, []);
-}
+type Screen = 'intro' | 'home' | 'learn' | 'quiz1' | 'quiz2' | 'collection' | 'story' | 'formation' | 'dig' | 'expedition';
 
 const KEY_HELP =
   '조작 안내. 화살표로 이동, 엔터로 선택. 에프2 다시 듣기, 에프3 진행도, 에프4 촉각 패턴 다시 출력, 에프1 홈으로. ' +
@@ -93,6 +63,18 @@ export default function App() {
         )}
         {screen === 'learn' && (
           <LearnScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+        )}
+        {screen === 'dig' && (
+          <DigExperienceScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+        )}
+        {screen === 'expedition' && (
+          <ExpeditionScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+        )}
+        {screen === 'formation' && (
+          <FormationScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+        )}
+        {screen === 'story' && (
+          <StoryScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
         )}
         {(screen === 'quiz1' || screen === 'quiz2') && (
           <QuizScreen
@@ -185,6 +167,10 @@ function HomeScreen({
   const items = useMemo(() => {
     const list: { id: string; label: string; hint: string; run: () => void }[] = [
       { id: 'learn', label: '화석 탐색 학습', hint: '다섯 가지 화석을 천천히 만져 보며 배워요', run: () => onNavigate('learn') },
+      { id: 'expedition', label: '화석 신호 추적', hint: `신호를 좇아 화석을 찾고 공룡을 복원해요 · ${progress.expeditionRounds}마리 복원`, run: () => onNavigate('expedition') },
+      { id: 'dig', label: '발굴 체험', hint: '탐침 → 붓질 → 추출, 진짜 발굴 순서를 따라해요', run: () => onNavigate('dig') },
+      { id: 'formation', label: '화석이 되기까지', hint: `공룡이 화석이 되는 여섯 단계 이야기${progress.formationDone ? ' · 완주' : ''}`, run: () => onNavigate('formation') },
+      { id: 'story', label: '공룡 이야기', hint: '다섯 공룡의 생애, 서식지, 크기를 만나요', run: () => onNavigate('story') },
       { id: 'quiz1', label: '퀴즈 1 · 부위 맞추기', hint: `손끝으로 어느 부위인지 맞혀요 · 최고 ${progress.best.lv1}점`, run: () => onNavigate('quiz1') },
       { id: 'quiz2', label: '퀴즈 2 · 주인 찾기', hint: `이 화석의 주인 공룡을 맞혀요 · 최고 ${progress.best.lv2}점`, run: () => onNavigate('quiz2') },
       { id: 'collection', label: '화석 도감', hint: '지금까지 배운 화석을 다시 만나요', run: () => onNavigate('collection') },
@@ -577,8 +563,12 @@ function CollectionScreen({
     const c = progress.correct[p.id] ?? {};
     const parts: string[] = [];
     if (progress.learned[p.id]) parts.push('학습 완료');
+    if (progress.digDone[p.id]) parts.push('발굴 완료');
+    if (progress.expeditionFound[p.id]) parts.push('신호 추적 발견');
+    if (progress.restored[p.dinosaurId]) parts.push('복원 완료');
     if (c.lv1) parts.push('부위 정답');
     if (c.lv2) parts.push('주인 정답');
+    if (progress.storyRead[p.dinosaurId]) parts.push('공룡 이야기 읽음');
     return parts.length ? parts.join(' · ') : '아직 배우는 중';
   }, [progress]);
 

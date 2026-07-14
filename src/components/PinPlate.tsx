@@ -1,26 +1,7 @@
 import { useMemo } from 'react';
+import { hexToBoolGrid } from '../dotpad/tactileGen';
 
-// 600-hex → 60×40 boolean 그리드.
-// 브라유 셀 배치: 10행 × 30열, 셀 = 4×2핀 (왼쪽 열 bit0-3, 오른쪽 열 bit4-7).
-export function hexToDots(hex: string): boolean[][] {
-  const ROWS = 40, COLS = 60;
-  const dots: boolean[][] = Array.from({ length: ROWS }, () => new Array(COLS).fill(false));
-  const byteCount = Math.min(hex.length >> 1, 300);
-  for (let i = 0; i < byteCount; i++) {
-    const byte = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
-    if (!byte) continue;
-    const bRow = Math.floor(i / 30);
-    const bCol = i % 30;
-    for (let pin = 0; pin < 8; pin++) {
-      if ((byte >> pin) & 1) {
-        const r = bRow * 4 + (pin & 3);
-        const c = bCol * 2 + (pin >> 2);
-        if (r < ROWS && c < COLS) dots[r][c] = true;
-      }
-    }
-  }
-  return dots;
-}
+const hexToDots = hexToBoolGrid;
 
 /**
  * 발굴 플레이트 — 닷패드 320(60×40) 핀 상태의 화면 시뮬레이션.
