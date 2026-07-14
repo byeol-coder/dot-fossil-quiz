@@ -170,10 +170,10 @@ function HomeScreen({
   const items = useMemo(() => {
     const list: { id: string; label: string; hint: string; run: () => void }[] = [
       { id: 'learn', label: '화석 탐색 학습', hint: '다섯 가지 화석을 천천히 만져 보며 배워요', run: () => onNavigate('learn') },
-      { id: 'expedition', label: '화석 신호 추적', hint: `신호를 좇아 화석을 찾고 공룡을 복원해요 · ${progress.expeditionRounds}마리 복원`, run: () => onNavigate('expedition') },
       { id: 'dig', label: '발굴 체험', hint: '탐침 → 붓질 → 추출, 진짜 발굴 순서를 따라해요', run: () => onNavigate('dig') },
       { id: 'formation', label: '화석이 되기까지', hint: `공룡이 화석이 되는 여섯 단계 이야기${progress.formationDone ? ' · 완주' : ''}`, run: () => onNavigate('formation') },
       { id: 'story', label: '공룡 이야기', hint: '다섯 공룡의 생애, 서식지, 크기를 만나요', run: () => onNavigate('story') },
+      { id: 'expedition', label: '화석 신호 추적', hint: `신호를 좇아 화석을 찾고 공룡을 복원해요 · ${progress.expeditionRounds}마리 복원`, run: () => onNavigate('expedition') },
       { id: 'quiz1', label: '퀴즈 1 · 부위 맞추기', hint: `손끝으로 어느 부위인지 맞혀요 · 최고 ${progress.best.lv1}점`, run: () => onNavigate('quiz1') },
       { id: 'quiz2', label: '퀴즈 2 · 주인 찾기', hint: `이 화석의 주인 공룡을 맞혀요 · 최고 ${progress.best.lv2}점`, run: () => onNavigate('quiz2') },
       { id: 'collection', label: '화석 도감', hint: '지금까지 배운 화석을 다시 만나요', run: () => onNavigate('collection') },
@@ -235,7 +235,7 @@ function HomeScreen({
           <strong>{progress.best.lv1 + progress.best.lv2}<small>/10</small></strong>
         </div>
       </div>
-      <ul className="menu-list" role="listbox" aria-label="메뉴">
+      <ul className="menu-list menu-list--home" role="listbox" aria-label="메뉴">
         {items.map((it, i) => (
           <li
             key={it.id}
