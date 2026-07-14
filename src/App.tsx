@@ -277,10 +277,11 @@ function LearnScreen({
     pad.sendHex(p.hex);
     pad.sendText(p.name);
     speak(
-      `${withIntro ? '화석 탐색 학습. 좌우 화살표로 화석을 바꿔요. ' : ''}` +
-      `${i + 1}번 화석, ${p.name}. 닷패드를 천천히 만져 보세요. 엔터를 누르면 자세한 설명을 들어요.`,
+      `${withIntro ? '화석 탐색 학습. 좌우 화살표로 넘기면 바로 설명을 들어요. ' : ''}` +
+      `${i + 1}번 화석, ${p.name}. ${p.feel} 이 화석의 주인은 ${p.dinosaurName}. ${p.dinosaurFact}`,
     );
-  }, [pad]);
+    updateProgress(prev => ({ ...prev, learned: { ...prev.learned, [p.id]: true } }));
+  }, [pad, updateProgress]);
 
   useEffect(() => { announce(0, true); }, [announce]);
 
@@ -293,9 +294,7 @@ function LearnScreen({
       setIdx(n); announce(n);
     } else if (e.key === 'Enter') {
       if (idx === PARTS.length) { onHome(); speak('메뉴로 돌아왔어요.'); return; }
-      const p = PARTS[idx];
-      speak(`${p.name}. ${p.feel} 이 화석의 주인은 ${p.dinosaurName}. ${p.dinosaurFact}`);
-      updateProgress(prev => ({ ...prev, learned: { ...prev.learned, [p.id]: true } }));
+      replay();
     } else if (e.key === 'F1') {
       onHome(); speak('메뉴로 돌아왔어요.');
     } else if (e.key === 'F2') {
@@ -326,7 +325,7 @@ function LearnScreen({
           <p className="lede">엔터를 누르면 메뉴로 돌아가요.</p>
         </>
       )}
-      <p className="key-help">←→ 화석 바꾸기 · Enter 자세히 듣기 · F4 패턴 다시 출력 · F1 홈</p>
+      <p className="key-help">←→ 넘기면 바로 설명 재생 · F4 패턴 다시 출력 · F2 다시 듣기 · F1 홈</p>
     </section>
   );
 }
@@ -580,7 +579,10 @@ function CollectionScreen({
     const p = PARTS[i];
     pad.sendHex(p.hex);
     pad.sendText(p.name);
-    speak(`${withIntro ? '화석 도감. 위아래 화살표로 넘겨 보세요. ' : ''}${p.name}, ${badge(p)}. 엔터를 누르면 설명을 들어요.`);
+    speak(
+      `${withIntro ? '화석 도감. 위아래 화살표로 넘기면 바로 설명을 들어요. ' : ''}` +
+      `${p.name}, ${badge(p)}. ${p.feel} 주인은 ${p.dinosaurName}. ${p.dinosaurFact}`,
+    );
   }, [pad, badge]);
 
   useEffect(() => { announce(0, true); }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -592,8 +594,7 @@ function CollectionScreen({
       const n = (idx - 1 + total) % total; setIdx(n); announce(n);
     } else if (e.key === 'Enter') {
       if (idx === PARTS.length) { onHome(); speak('메뉴로 돌아왔어요.'); return; }
-      const p = PARTS[idx];
-      speak(`${p.name}. ${p.feel} 주인은 ${p.dinosaurName}. ${p.dinosaurFact}`);
+      replay();
     } else if (e.key === 'F1') {
       onHome(); speak('메뉴로 돌아왔어요.');
     } else if (e.key === 'F2') {
@@ -622,7 +623,7 @@ function CollectionScreen({
         </li>
       </ul>
       {idx < PARTS.length && SHOW_PREVIEW && <PinPlate hex={PARTS[idx].hex} label={PARTS[idx].name} />}
-      <p className="key-help">↑↓ 넘기기 · Enter 설명 듣기 · F3 전체 진행도 · F1 홈</p>
+      <p className="key-help">↑↓ 넘기면 바로 설명 재생 · F3 전체 진행도 · F2 다시 듣기 · F1 홈</p>
     </section>
   );
 }

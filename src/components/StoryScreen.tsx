@@ -28,10 +28,12 @@ export function StoryScreen({
     pad.sendHex(buildSizeCompareHex(d.lengthM));
     pad.sendText(d.name);
     speak(
-      `${withIntro ? '공룡 이야기. 좌우 화살표로 공룡을 바꿔요. 세 시대, 트라이아스기, 쥐라기, 백악기 순서로 공룡이 등장했어요. ' : ''}` +
-      `${i + 1}번, ${d.name}. ${d.hook} 엔터를 누르면 자세한 이야기를 들어요.`,
+      `${withIntro ? '공룡 이야기. 좌우 화살표로 넘기면 바로 설명을 들어요. 세 시대, 트라이아스기, 쥐라기, 백악기 순서로 공룡이 등장했어요. ' : ''}` +
+      `${i + 1}번, ${d.name}. ${d.hook} ${d.era}에 살았고, ${d.diet} 공룡이에요. 서식지는 ${d.habitat}. ` +
+      `${sizeCompareSentence(d)} ${d.behavior}`,
     );
-  }, [pad]);
+    updateProgress(prev => ({ ...prev, storyRead: { ...prev.storyRead, [d.id]: true } }));
+  }, [pad, updateProgress]);
 
   useEffect(() => { announce(0, true); }, [announce]);
 
@@ -42,12 +44,7 @@ export function StoryScreen({
       const n = (idx - 1 + total) % total; setIdx(n); announce(n);
     } else if (e.key === 'Enter') {
       if (isHomeItem) { onHome(); speak('메뉴로 돌아왔어요.'); return; }
-      const d = DINOSAURS[idx];
-      speak(
-        `${d.name}. ${d.era}에 살았고, ${d.diet} 공룡이에요. 서식지는 ${d.habitat}. ` +
-        `${sizeCompareSentence(d)} ${d.behavior}`,
-      );
-      updateProgress(prev => ({ ...prev, storyRead: { ...prev.storyRead, [d.id]: true } }));
+      replay();
     } else if (e.key === 'F1') {
       onHome(); speak('메뉴로 돌아왔어요.');
     } else if (e.key === 'F2') {
@@ -79,7 +76,7 @@ export function StoryScreen({
           <p className="lede">엔터를 누르면 메뉴로 돌아가요.</p>
         </>
       )}
-      <p className="key-help">←→ 공룡 바꾸기 · Enter 이야기 듣기 · F4 크기 비교 다시 출력 · F1 홈</p>
+      <p className="key-help">←→ 넘기면 바로 설명 재생 · F4 크기 비교 다시 출력 · F2 다시 듣기 · F1 홈</p>
     </section>
   );
 }

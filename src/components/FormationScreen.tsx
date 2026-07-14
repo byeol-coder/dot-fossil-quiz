@@ -28,8 +28,8 @@ export function FormationScreen({
     pad.sendHex(buildFormationHex(s.id));
     pad.sendText(s.title);
     speak(
-      `${withIntro ? '화석이 되기까지, 여섯 단계예요. 오른쪽 화살표로 다음 단계로 넘어가요. ' : ''}` +
-      `${s.title}. ${s.narration}`,
+      `${withIntro ? '화석이 되기까지, 여섯 단계예요. 오른쪽 화살표로 넘기면 바로 다음 단계 설명을 들어요. ' : ''}` +
+      `${s.title}. ${s.narration} ${s.feel}`,
     );
     if (i === FORMATION_STEPS.length - 1) {
       updateProgress(prev => ({ ...prev, formationDone: true }));
@@ -45,7 +45,7 @@ export function FormationScreen({
       const n = (idx - 1 + total) % total; setIdx(n); announce(n);
     } else if (e.key === 'Enter') {
       if (isHomeItem) { onHome(); speak('메뉴로 돌아왔어요.'); return; }
-      speak(`${step!.narration} ${step!.feel}`);
+      replay();
     } else if (e.key === 'F1') {
       onHome(); speak('메뉴로 돌아왔어요.');
     } else if (e.key === 'F2') {
@@ -73,7 +73,7 @@ export function FormationScreen({
           <p className="lede">엔터를 누르면 메뉴로 돌아가요.</p>
         </>
       )}
-      <p className="key-help">←→ 단계 넘기기 · Enter 다시 설명 듣기 · F4 패턴 다시 출력 · F1 홈</p>
+      <p className="key-help">←→ 넘기면 바로 설명 재생 · F4 패턴 다시 출력 · F2 다시 듣기 · F1 홈</p>
     </section>
   );
 }
