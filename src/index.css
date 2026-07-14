@@ -604,3 +604,25 @@ body {
   .intro-art, .intro-start__signal { animation: none !important; }
   .reward-burst span { animation: none; opacity: 0; }
 }
+
+/* ── 연구 여정 P0/P1 ─────────────────────────────────────────────────── */
+.journey-menu { display: grid; gap: 12px; margin-top: 22px; }
+.journey-menu li { min-height: 78px; border: 1px solid rgba(255,183,68,.18); background: rgba(16,19,18,.76); }
+.journey-menu li.is-active { border-color: var(--amber); background: linear-gradient(90deg,rgba(255,183,68,.14),rgba(55,199,242,.05)); }
+.campaign-summary { color: var(--bone-dim); font-size: 15px; }
+.campaign-summary strong { color: var(--amber-hot); font-size: 22px; }
+.mission-reward,.next-clue { padding: 14px 16px; border-left: 3px solid var(--amber); background: rgba(255,183,68,.07); }
+.mission-reward strong,.next-clue strong { display: block; color: var(--amber-hot); font-size: 12px; letter-spacing: .1em; text-transform: uppercase; }
+.mission-reward span { color: var(--bone); }
+.fragment-row { display: grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 16px 0; }
+.fragment-row span { padding: 10px; border: 1px dashed #62543f; color: #8e8372; text-align: center; font-size: 13px; }
+.fragment-row .is-owned { border-style: solid; border-color: #55b9d2; color: #dffaff; background: rgba(55,199,242,.08); }
+.fragment-row .is-selected { outline: 3px solid var(--amber); outline-offset: 2px; }
+.research-list { display: grid; grid-template-columns: repeat(5,1fr); gap: 6px; padding: 0; list-style: none; }
+.research-list li { display: grid; gap: 4px; min-width: 0; padding: 10px; border: 1px solid rgba(255,255,255,.1); color: var(--bone-dim); }
+.research-list li strong { color: var(--bone); font-size: 12px; }
+.research-list li span { font-size: 10px; }
+.research-list li.is-active { border-color: var(--amber); background: rgba(255,183,68,.1); }
+.reward-shelf { margin-top: 12px; padding: 10px 14px; background: rgba(55,199,242,.05); color: var(--bone-dim); font-size: 13px; }
+.reward-shelf strong { color: #8de6ff; }
+@media (max-width:640px){.research-list{grid-template-columns:1fr}.fragment-row{grid-template-columns:1fr}.journey-menu .menu-hint{display:block}}

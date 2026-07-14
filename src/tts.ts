@@ -14,10 +14,17 @@ declare global {
 }
 
 let lastSpoken = '';
+const listeners = new Set<(text: string) => void>();
+
+export function subscribeSpeech(listener: (text: string) => void) {
+  listeners.add(listener);
+  return () => { listeners.delete(listener); };
+}
 
 export function speak(text: string) {
   if (!text) return;
   lastSpoken = text;
+  listeners.forEach(listener => listener(text));
   const tts = window.TW_TTS;
   if (tts && typeof tts.speak === 'function') {
     try {

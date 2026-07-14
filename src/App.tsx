@@ -9,15 +9,17 @@ import { StoryScreen } from './components/StoryScreen';
 import { FormationScreen } from './components/FormationScreen';
 import { DigExperienceScreen } from './components/DigExperienceScreen';
 import { ExpeditionScreen } from './components/ExpeditionScreen';
-import { speak, replay } from './tts';
+import { CampaignMissionScreen, CampaignStatusScreen, JourneyHome, ResearchCollectionScreen, TrainingLabScreen } from './components/CampaignScreens';
+import { speak, replay, subscribeSpeech } from './tts';
 import { IS_EMBED, SHOW_PREVIEW, postExit } from './embed';
 import { useKeys } from './hooks/useKeys';
-import { loadProgress, saveProgress } from './progress';
+import { loadProgress, reconcileProgress, saveProgress } from './progress';
 import type { Progress } from './progress';
+import { BADGES, FIELD_TOOLS, LEVEL_NAMES, MISSIONS } from './campaign/campaignData';
 import introImage from './assets/Dot-Fossil-Lab-intro.png';
 import introMobileImage from './assets/Dot-Fossil-Lab-intro-mobile.png';
 
-type Screen = 'intro' | 'home' | 'learn' | 'quiz1' | 'quiz2' | 'collection' | 'story' | 'formation' | 'dig' | 'expedition';
+type Screen = 'intro' | 'home' | 'campaign' | 'research' | 'training' | 'status' | 'learn' | 'quiz1' | 'quiz2' | 'collection' | 'story' | 'formation' | 'dig' | 'expedition';
 
 const KEY_HELP =
   '조작 안내. 화살표로 이동, 엔터로 선택. 에프2 다시 듣기, 에프3 진행도, 에프4 촉각 패턴 다시 출력, 에프1 홈으로. ' +
@@ -26,17 +28,59 @@ const KEY_HELP =
 export default function App() {
   const [screen, setScreen] = useState<Screen>(IS_EMBED ? 'home' : 'intro');
   const [progress, setProgress] = useState<Progress>(loadProgress);
+  const [returnScreen, setReturnScreen] = useState<Screen>('home');
+  const [activityReturn, setActivityReturn] = useState<Screen>('home');
+  const [homeIndex, setHomeIndex] = useState(0);
+  const [liveSpeech, setLiveSpeech] = useState('');
   const pad = useDotPad();
 
   const updateProgress = useCallback((fn: (p: Progress) => Progress) => {
     setProgress(prev => {
-      const next = fn(prev);
+      const next = reconcileProgress(fn(prev));
       saveProgress(next);
+      const levelUp = next.campaign.level > prev.campaign.level;
+      const newBadges = Object.keys(next.campaign.earnedBadges).filter(id => !prev.campaign.earnedBadges[id]);
+      if (levelUp || newBadges.length) {
+        window.setTimeout(() => {
+          const messages: string[] = [];
+          if (levelUp) {
+            const tool = FIELD_TOOLS.find(x => x.level === next.campaign.level);
+            const mission = MISSIONS[next.campaign.level - 1];
+            const fragmentCount = Object.values(next.campaign.fragments).reduce((n,x)=>n+Number(x.body)+Number(x.signature)+Number(x.footprint),0);
+            messages.push(`${LEVEL_NAMES[next.campaign.level-1]}로 레벨업했습니다. ${tool?.name ?? '새 도구'}를 얻었어요. ${mission.title}이 열렸습니다. 다음 임무는 ${mission.goal} 현재 조각은 15개 중 ${fragmentCount}개입니다. ${mission.teaser}`);
+          }
+          for (const id of newBadges) {
+            const badge = BADGES.find(x => x.id === id);
+            if (badge) messages.push(`${badge.name} 배지를 받았어요. ${badge.desc}`);
+          }
+          speak(messages.join(' '));
+        }, 1500);
+      }
       return next;
     });
   }, []);
 
   const goHome = useCallback(() => setScreen('home'), []);
+
+  useEffect(() => subscribeSpeech(setLiveSpeech), []);
+
+  useEffect(() => {
+    const showStatus = (e: KeyboardEvent) => {
+      if (e.key !== 'F3' || screen === 'intro' || screen === 'status') return;
+      e.preventDefault(); e.stopImmediatePropagation();
+      setReturnScreen(screen); setScreen('status');
+    };
+    window.addEventListener('keydown', showStatus, true);
+    return () => window.removeEventListener('keydown', showStatus, true);
+  }, [screen]);
+
+  useEffect(() => {
+    if (screen === 'intro') return;
+    requestAnimationFrame(() => {
+      const title = document.querySelector('.screen-title') as HTMLElement | null;
+      if (title) { title.tabIndex = -1; title.focus(); }
+    });
+  }, [screen]);
 
   return (
     <div className={`app ${IS_EMBED ? 'app--embed' : ''} ${screen === 'intro' ? 'app--intro' : ''}`}>
@@ -58,33 +102,46 @@ export default function App() {
       )}
 
       <main className={`stage ${screen === 'intro' ? 'stage--intro' : ''}`}>
+        <p className="visually-hidden" aria-live="polite" aria-atomic="true">{liveSpeech}</p>
         {screen === 'intro' && (
           <IntroScreen onStart={() => setScreen('home')} />
         )}
         {screen === 'home' && (
-          <HomeScreen pad={pad} progress={progress} onNavigate={setScreen} />
+          <JourneyHome pad={pad} progress={progress} onNavigate={setScreen} initialIndex={homeIndex} onIndex={setHomeIndex} />
+        )}
+        {screen === 'campaign' && (
+          <CampaignMissionScreen pad={pad} progress={progress} onNavigate={s => { setActivityReturn('campaign'); setScreen(s); }} onHome={goHome} updateProgress={updateProgress} />
+        )}
+        {screen === 'training' && (
+          <TrainingLabScreen onNavigate={s => { setActivityReturn('training'); setScreen(s); }} onHome={goHome} />
+        )}
+        {screen === 'research' && (
+          <ResearchCollectionScreen pad={pad} progress={progress} onHome={goHome} />
+        )}
+        {screen === 'status' && (
+          <CampaignStatusScreen pad={pad} progress={progress} onReturn={() => setScreen(returnScreen)} />
         )}
         {screen === 'learn' && (
-          <LearnScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+          <LearnScreen pad={pad} onHome={() => setScreen(activityReturn)} updateProgress={updateProgress} />
         )}
         {screen === 'dig' && (
-          <DigExperienceScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+          <DigExperienceScreen pad={pad} onHome={() => setScreen(activityReturn)} updateProgress={updateProgress} />
         )}
         {screen === 'expedition' && (
-          <ExpeditionScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+          <ExpeditionScreen pad={pad} onHome={() => setScreen(activityReturn)} updateProgress={updateProgress} />
         )}
         {screen === 'formation' && (
-          <FormationScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+          <FormationScreen pad={pad} onHome={() => setScreen(activityReturn)} updateProgress={updateProgress} />
         )}
         {screen === 'story' && (
-          <StoryScreen pad={pad} onHome={goHome} updateProgress={updateProgress} />
+          <StoryScreen pad={pad} onHome={() => setScreen(activityReturn)} updateProgress={updateProgress} />
         )}
         {(screen === 'quiz1' || screen === 'quiz2') && (
           <QuizScreen
             key={screen}
             level={screen === 'quiz1' ? 1 : 2}
             pad={pad}
-            onHome={goHome}
+            onHome={() => setScreen(activityReturn)}
             updateProgress={updateProgress}
           />
         )}

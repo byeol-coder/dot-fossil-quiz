@@ -217,6 +217,7 @@ export function ExpeditionScreen({
       if (tier.current.combo) {
         const nextCombo = combo + 1;
         setCombo(nextCombo);
+        updateProgress(prev => ({ ...prev, expeditionBestCombo: Math.max(prev.expeditionBestCombo, nextCombo) }));
         if (nextCombo === 3 || nextCombo === 5 || nextCombo === 10) {
           comboMsg = ` ${nextCombo}연속 정답 콤보!`;
         }
@@ -244,11 +245,10 @@ export function ExpeditionScreen({
       ...prev,
       expeditionFound: { ...prev.expeditionFound, [fossil.id]: true },
       expeditionRounds: prev.expeditionRounds + 1,
-      restored: { ...prev.restored, [fossil.dinosaurId]: true },
     }));
     speak(
-      `${bonus ? '타이밍이 좋았어요! ' : ''}복원 성공! ${fossil.dinosaurName}이 화석 도감에 등록됐어요. ` +
-      `${fossil.dinosaurFact} 엔터를 누르면 다음 발굴지로 가요.`,
+      `${bonus ? '타이밍이 좋았어요! ' : ''}${fossil.dinosaurName}의 대표 특징 조각을 찾았어요. ` +
+      `몸통, 대표 특징, 발자국 세 조각이 모두 모이면 전체 실루엣이 복원돼요. ${fossil.dinosaurFact} 엔터를 누르면 다음 발굴지로 가요.`,
     );
   }, [fossil, updateProgress]);
 
@@ -420,7 +420,7 @@ export function ExpeditionScreen({
           <div className="reward-burst" aria-hidden="true">
             <span /><span /><span />
           </div>
-          <h2 className="screen-title">복원 성공! {fossil.dinosaurName}</h2>
+          <h2 className="screen-title">대표 특징 조각 발견! {fossil.dinosaurName}</h2>
           <p className="lede">{fossil.name} · 주인은 <strong>{fossil.dinosaurName}</strong></p>
           <p className="fact">{fossil.dinosaurFact}</p>
           {SHOW_PREVIEW && <PinPlate hex={SILHOUETTES[fossil.dinosaurId]} label={fossil.dinosaurName} />}

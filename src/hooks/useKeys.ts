@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 
-const ALLOWED = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'F1', 'F2', 'F3', 'F4'];
+const ALLOWED = ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Enter', 'Escape', 'F1', 'F2', 'F3', 'F4'];
 
 export function useKeys(handler: (e: KeyboardEvent) => void) {
   const ref = useRef(handler);
