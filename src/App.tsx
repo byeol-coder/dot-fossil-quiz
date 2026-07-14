@@ -110,7 +110,7 @@ export default function App() {
           <JourneyHome pad={pad} progress={progress} onNavigate={setScreen} initialIndex={homeIndex} onIndex={setHomeIndex} />
         )}
         {screen === 'campaign' && (
-          <CampaignMissionScreen pad={pad} progress={progress} onNavigate={s => { setActivityReturn('campaign'); setScreen(s); }} onHome={goHome} updateProgress={updateProgress} />
+          <CampaignMissionScreen pad={pad} progress={progress} onNavigate={s => { if (s === 'status') setReturnScreen('campaign'); else setActivityReturn('campaign'); setScreen(s); }} onHome={goHome} updateProgress={updateProgress} />
         )}
         {screen === 'training' && (
           <TrainingLabScreen onNavigate={s => { setActivityReturn('training'); setScreen(s); }} onHome={goHome} />

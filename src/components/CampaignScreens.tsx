@@ -11,7 +11,7 @@ import { DINOSAURS } from '../data/dinosaurs';
 import { PinPlate } from './PinPlate';
 import { buildProgressHex } from '../dotpad/progressPattern';
 
-export type JourneyScreen = 'campaign'|'research'|'training'|'learn'|'dig'|'formation'|'story'|'expedition'|'quiz1'|'quiz2';
+export type JourneyScreen = 'campaign'|'research'|'training'|'status'|'learn'|'dig'|'formation'|'story'|'expedition'|'quiz1'|'quiz2';
 
 type Pad = ReturnType<typeof useDotPad>;
 
@@ -48,6 +48,7 @@ export function CampaignMissionScreen({pad,progress,onNavigate,onHome,updateProg
   const items=useMemo(()=>[
     {label:'현재 임무 이어서 하기',hint:mission.goal,run:()=>onNavigate(activity)},
     {label:'다음 공룡의 단서 만지기',hint:clue,run:()=>{const id=DINO_ORDER[progress.campaign.level-1];pad.sendHex(DINOSAUR_FRAGMENTS[id].signature);pad.sendText('다음 공룡 단서');updateProgress(p=>({...p,campaign:{...p.campaign,viewedNextClueIds:Array.from(new Set([...p.campaign.viewedNextClueIds,`clue-${progress.campaign.level}`]))}}));speak(`다음 공룡의 미스터리 단서. ${clue}`);}},
+    {label:'전체 연구 진행도 확인',hint:'등급, 조각 세 칸, 다음 해금 조건을 만져 봐요',run:()=>onNavigate('status')},
     {label:'공룡 연구 도감 보기',hint:'모은 조각과 보상을 확인해요',run:()=>onNavigate('research')},
     {label:'홈으로',hint:'메인 메뉴로 돌아가요',run:onHome},
   ],[mission,activity,clue,pad,progress,onNavigate,onHome,updateProgress]);
@@ -77,7 +78,7 @@ export function ResearchCollectionScreen({pad,progress,onHome}:{pad:Pad;progress
 
 export function CampaignStatusScreen({pad,progress,onReturn}:{pad:Pad;progress:Progress;onReturn:()=>void}) {
   const hex=buildProgressHex(progress); const text=campaignStatusText(progress);
-  useEffect(()=>{pad.sendHex(hex);pad.sendText(`연구 레벨 ${progress.campaign.level}`);speak(`${text} 위쪽은 연구 레벨 다섯 칸, 가운데는 현재 공룡 조각 세 칸, 아래쪽은 연구 점수 막대예요. 엔터나 에프3으로 돌아가세요.`);},[]);// eslint-disable-line
+  useEffect(()=>{pad.sendHex(hex);pad.sendText(`연구 레벨 ${progress.campaign.level}`);speak(`${text} 위쪽은 연구 레벨 다섯 칸, 가운데는 현재 공룡 조각 세 칸, 아래쪽은 연구 점수 막대예요. 엔터나 에프3으로 돌아가세요.`);const off=window.setTimeout(()=>pad.sendHex('0'.repeat(600)),240);const on=window.setTimeout(()=>pad.sendHex(hex),430);return()=>{clearTimeout(off);clearTimeout(on);};},[]);// eslint-disable-line
   useKeys(e=>{if(e.key==='Enter'||e.key==='F3'||e.key==='Escape')onReturn();else if(e.key==='F2')replay();else if(e.key==='F4')pad.sendHex(hex);});
   return <section className="status-screen"><p className="eyebrow">F3 · 전체 진행도</p><h2 className="screen-title">연구 레벨 {progress.campaign.level}</h2><p className="lede">연구 점수 {progress.campaign.points}점</p><p className="fact">{text}</p>{SHOW_PREVIEW&&<PinPlate hex={hex} label="연구 진행도 촉각 블록"/>}<p className="key-help">Enter / F3 / Escape 이전 화면 · F4 다시 출력</p></section>;
 }

@@ -12,7 +12,16 @@ export function buildProgressHex(p: Progress): string {
   const g = emptyGrid();
   for (let i=0;i<5;i++) box(g, 2+i*11, 2, 9, 8, i < p.campaign.level);
   const target = Object.values(p.campaign.fragments).find(x => !x.restored) ?? { body:true, signature:true, footprint:true, restored:true };
-  [target.body,target.signature,target.footprint].forEach((v,i) => box(g, 5+i*18, 15, 14, 10, v));
+  const slots = [target.body,target.signature,target.footprint];
+  const current = slots.findIndex(v=>!v);
+  slots.forEach((v,i) => {
+    const x=5+i*18; box(g,x,15,14,10,v);
+    if (!v && i===current) { g[19][x+6]=true; g[20][x+6]=true; g[19][x+7]=true; g[20][x+7]=true; }
+    if (!v && i>current) {
+      for(let yy=19;yy<23;yy++)for(let xx=x+5;xx<x+9;xx++)g[yy][xx]=true;
+      g[18][x+5]=g[17][x+6]=g[17][x+7]=g[18][x+8]=true;
+    }
+  });
   const gauge = Math.min(52, Math.round((p.campaign.points / 500) * 52));
   box(g, 4, 30, 52, 7, false);
   for (let y=32;y<35;y++) for (let x=6;x<6+gauge;x++) g[y][x]=true;
